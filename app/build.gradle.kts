@@ -2,7 +2,7 @@ plugins {
     id("java")
     id("application")
     id("checkstyle")
-    id "org.sonarqube" version "7.2.2.6593"
+    id("org.sonarqube") version "7.2.2.6593"
     id("jacoco")
 }
 
@@ -45,8 +45,8 @@ application {
 
 sonar {
     properties {
-        property "sonar.projectKey", "valentin-osadchii_java-project-72"
-        property "sonar.organization", "valentin-osadchii"
+        property("sonar.projectKey", "valentin-osadchii_java-project-72")
+        property("sonar.organization", "valentin-osadchii")
     }
 }
 
