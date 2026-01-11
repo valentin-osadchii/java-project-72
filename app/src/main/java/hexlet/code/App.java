@@ -3,6 +3,7 @@ package hexlet.code;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
+import hexlet.code.controller.UrlsController;
 import hexlet.code.repository.BaseRepository;
 import io.javalin.Javalin;
 
@@ -73,6 +74,11 @@ public class App {
 
 
         app.get("/", ctx -> ctx.render("index.jte"));
+
+        app.get("/urls", UrlsController::index);
+        app.post("/urls", UrlsController::create);
+
+        //app.get("/urls/{id}", UrlController::show);
 
         return app;
     }

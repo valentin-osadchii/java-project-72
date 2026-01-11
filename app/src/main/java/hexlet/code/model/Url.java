@@ -22,4 +22,9 @@ public final class Url {
         this.name = name;
         this.createdAt = LocalDateTime.now();
     }
+
+    public Url(String name, LocalDateTime createdAt) {
+        this.name = name;
+        this.createdAt = createdAt;
+    }
 }
