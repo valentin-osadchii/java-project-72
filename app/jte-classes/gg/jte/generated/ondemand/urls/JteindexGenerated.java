@@ -3,12 +3,19 @@ import hexlet.code.dto.urls.UrlsPage;
 import hexlet.code.util.NamedRoutes;
 public final class JteindexGenerated {
 	public static final String JTE_NAME = "urls/index.jte";
-	public static final int[] JTE_LINE_INFO = {0,0,1,3,3,3,5,5,7,7,9,10,11,12,20,20,21,21,23,23,23,24,24,24,24,24,24,24,24,24,24,24,24,28,28,29,29,31,31,31,31,31,3,3,3,3};
+	public static final int[] JTE_LINE_INFO = {0,0,1,3,3,3,5,5,7,7,8,8,9,9,9,10,10,13,14,15,16,24,24,25,25,27,27,27,28,28,28,28,28,28,28,28,28,28,28,28,32,32,33,33,35,35,35,35,35,3,3,3,3};
 	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, UrlsPage page) {
 		jteOutput.writeContent("\r\n");
 		gg.jte.generated.ondemand.layout.JtepageGenerated.render(jteOutput, jteHtmlInterceptor, new gg.jte.html.HtmlContent() {
 			public void writeTo(gg.jte.html.HtmlTemplateOutput jteOutput) {
-				jteOutput.writeContent("\r\n        <h1>Сайты</h1>\r\n    ");
+				jteOutput.writeContent("\r\n        ");
+				if (page.getFlash() != null) {
+					jteOutput.writeContent("\r\n            <p>");
+					jteOutput.setContext("p", null);
+					jteOutput.writeUserContent(page.getFlash());
+					jteOutput.writeContent("</p>\r\n        ");
+				}
+				jteOutput.writeContent("\r\n\r\n        <h1>Сайты</h1>\r\n    ");
 				jteOutput.writeContent("\r\n    ");
 				jteOutput.writeContent("\r\n    ");
 				jteOutput.writeContent("\r\n    ");
