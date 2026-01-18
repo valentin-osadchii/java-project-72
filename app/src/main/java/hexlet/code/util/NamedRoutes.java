@@ -14,4 +14,7 @@ public class NamedRoutes {
         return urlPath(String.valueOf(id));
     }
 
+    public static String rootPath() {
+        return "/";
+    }
 }

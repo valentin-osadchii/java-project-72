@@ -5,16 +5,8 @@
 
 @template.layout.page(
     content = @`
-        @if(page.getFlash() != null)
-            <p>${page.getFlash()}</p>
-        @endif
-
         <h1>Сайты</h1>
-    <%--    <form action="/courses" method="get">--%>
-    <%--        <input type="text" required name="term" value="${page.getTerm()}">--%>
-    <%--        <input type="submit" value="Search">--%>
-    <%--    </form>--%>
-        <table>
+        <table class="table">
             <tr>
                 <th>ID</th>
                 <th>Имя</th>
@@ -32,5 +24,6 @@
                 @endfor
             @endif
         </table>
-    `
+    `,
+    page = page
 )
