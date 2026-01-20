@@ -24,6 +24,11 @@ val lombokVersion = "1.18.34"
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.javalin:javalin-testtools:6.7.0")
+    testImplementation("org.assertj:assertj-core:3.27.3")
+    testImplementation("com.squareup.okhttp3:okhttp-urlconnection:4.12.0")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
 
     implementation("io.javalin:javalin:6.1.3")
     implementation("org.slf4j:slf4j-simple:2.0.7")
@@ -39,6 +44,7 @@ dependencies {
 
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
 }
 
 tasks.check {

@@ -7,13 +7,12 @@ import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.NamedRoutes;
 
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.validation.ValidationException;
 
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 
@@ -45,7 +44,6 @@ public class UrlsController {
         var page = new UrlPage(url);
         ctx.render("urls/show.jte", model("page", page));
     }
-
 
     public static void create(Context ctx) throws SQLException {
 
@@ -84,7 +82,7 @@ public class UrlsController {
         ctx.sessionAttribute("flashType", "success");
         ctx.sessionAttribute("flash", "Страница успешно добавлена");
 
-        ctx.redirect(NamedRoutes.urlsPath());
+        ctx.redirect(NamedRoutes.urlsPath(), HttpStatus.forStatus(301));
     }
 
     private static String normalizeUrl(String input) throws MalformedURLException {
@@ -109,4 +107,5 @@ public class UrlsController {
             throw new MalformedURLException("Некорректный URL");
         }
     }
+
 }

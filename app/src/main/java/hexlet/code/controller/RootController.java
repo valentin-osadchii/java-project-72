@@ -7,7 +7,6 @@ import static io.javalin.rendering.template.TemplateUtil.model;
 
 public class RootController {
     public static void index(Context ctx) {
-        // Создаем RootPage вместо BasePage
         var page = new RootPage();
 
         var flash = ctx.consumeSessionAttribute("flash");
