@@ -27,7 +27,7 @@
             </table>
 
             <h2 class="mt-5">Проверки</h2>
-            <form method="post" action="/urls/1/checks">
+            <form method="post" action="/urls/${page.getUrl().getId()}/checks">
                 <button type="submit" class="btn btn-primary">Запустить проверку</button>
             </form>
 

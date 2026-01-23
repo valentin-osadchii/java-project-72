@@ -1,22 +1,23 @@
 package hexlet.code.model;
 
-
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "urlChecks")
 public final class Url {
 
     private Long id;
     private String name;
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private List<UrlCheck> urlChecks = new ArrayList<>();
 
     public Url(String name) {
         this.name = name;
@@ -27,4 +28,10 @@ public final class Url {
         this.name = name;
         this.createdAt = createdAt;
     }
+
+    public void addUrlCheck(UrlCheck check) {
+        urlChecks.add(check);
+        check.setUrl(this); // Поддерживаем двустороннюю связь
+    }
+
 }

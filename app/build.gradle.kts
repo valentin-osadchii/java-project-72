@@ -45,6 +45,9 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
+    implementation("com.konghq:unirest-java-core:4.7.4")
+    implementation("org.jsoup:jsoup:1.15.3")
+
 }
 
 tasks.check {
