@@ -7,16 +7,16 @@
 @template.layout.page(
     content = @`
         <div class="container-lg mt-5">
-            <h1>Сайт: https://some-domain.org</h1>
+            <h1>Сайт: ${page.getUrl().getName()}</h1>
 
             <table class="table table-bordered table-hover mt-3">
                 <tbody>
                     <tr>
                         <td>ID</td>
-                        <td>Имя</td>
+                        <td>${page.getUrl().getId()}</td>
                     </tr>
                     <tr>
-                        <td>${page.getUrl().getId()}</td>
+                        <td>Имя</td>
                         <td>${page.getUrl().getName()}</td>
                     </tr>
                     <tr>

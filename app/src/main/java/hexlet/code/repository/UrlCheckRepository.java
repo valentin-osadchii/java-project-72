@@ -47,7 +47,7 @@ public class UrlCheckRepository extends BaseRepository {
         String sql = """
             SELECT * FROM url_checks
             WHERE url_id = ?
-            ORDER BY created_at DESC
+            ORDER BY ID DESC
             """;
 
         try (var conn = dataSource.getConnection();
