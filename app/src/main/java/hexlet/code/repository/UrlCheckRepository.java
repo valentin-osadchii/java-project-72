@@ -103,4 +103,12 @@ public class UrlCheckRepository extends BaseRepository {
         return check;
     }
 
+    public static void removeAll() throws SQLException {
+        String sql = "DELETE FROM url_checks";
+        try (var conn = dataSource.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        }
+    }
+
 }
