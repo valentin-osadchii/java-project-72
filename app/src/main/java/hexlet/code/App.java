@@ -34,7 +34,11 @@ public class App {
     }
 
     private static String getJdbcUrl() {
-        String jdbcUrl = System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
+        String jdbcUrl = System.getenv().getOrDefault(
+                "JDBC_DATABASE_URL",
+                "jdbc:h2:mem:project;"+
+                        "MODE=PostgreSQL;" +
+                        "DB_CLOSE_DELAY=-1;");
         return jdbcUrl;
     }
 
@@ -85,7 +89,7 @@ public class App {
 
         app.get(NamedRoutes.urlPath("{id}"), UrlsController::show);
 
-        app.get(NamedRoutes.urlPathCheck("{id}"), UrlsController::check);
+        app.post(NamedRoutes.urlPathCheck("{id}"), UrlsController::check);
 
         return app;
     }

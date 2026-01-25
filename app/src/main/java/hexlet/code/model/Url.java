@@ -17,6 +17,7 @@ public final class Url {
     private String name;
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Getter
     private List<UrlCheck> urlChecks = new ArrayList<>();
 
     public Url(String name) {
@@ -27,11 +28,13 @@ public final class Url {
     public Url(String name, LocalDateTime createdAt) {
         this.name = name;
         this.createdAt = createdAt;
+        this.urlChecks = new ArrayList<>();
     }
 
     public void addUrlCheck(UrlCheck check) {
         urlChecks.add(check);
-        check.setUrl(this); // Поддерживаем двустороннюю связь
+        check.setUrl(this);
     }
+
 
 }

@@ -1,9 +1,12 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.BasePage;
+import hexlet.code.dto.urls.UrlListItem;
 import hexlet.code.dto.urls.UrlPage;
 import hexlet.code.dto.urls.UrlsPage;
 import hexlet.code.model.Url;
 import hexlet.code.model.UrlCheck;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.NamedRoutes;
 
@@ -15,6 +18,7 @@ import kong.unirest.core.Unirest;
 import kong.unirest.core.GetRequest;
 import kong.unirest.core.HttpResponse;
 
+import kong.unirest.core.UnirestException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,35 +28,32 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static io.javalin.rendering.template.TemplateUtil.model;
 
 public class UrlsController {
 
     public static void index(Context ctx) throws SQLException {
-        var urls = UrlRepository.getEntities();
-        var page = new UrlsPage(urls);
+        List<UrlListItem> items = UrlRepository.getAllWithLastChecks();
+        var page = new UrlsPage(items);
 
-        var flash = ctx.consumeSessionAttribute("flash");
-        var flashType = ctx.consumeSessionAttribute("flashType");
-
-        if (flash != null) {
-            page.setFlash(flash.toString());
-        }
-        if (flashType != null) {
-            page.setFlashType(flashType.toString());
-        }
+        consumeFlashToPage(ctx, page);
 
         ctx.render("urls/index.jte", model("page", page));
     }
 
+
     public static void show(Context ctx) throws SQLException {
+
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var url = UrlRepository.find(id)
                 .orElseThrow(() -> new NotFoundResponse("Url not found"));
         var page = new UrlPage(url);
+
+        consumeFlashToPage(ctx, page);
+
         ctx.render("urls/show.jte", model("page", page));
     }
 
@@ -74,7 +75,6 @@ public class UrlsController {
         } catch (MalformedURLException e) {
             ctx.sessionAttribute("flashType", "danger");
             ctx.sessionAttribute("flash", "Некорректный URL");
-
             ctx.redirect(NamedRoutes.rootPath());
             return;
         }
@@ -82,7 +82,6 @@ public class UrlsController {
         if (UrlRepository.findByName(normalizedUrl).isPresent()) {
             ctx.sessionAttribute("flashType", "success");
             ctx.sessionAttribute("flash", "Страница уже существует");
-
             ctx.redirect(NamedRoutes.urlsPath());
             return;
         }
@@ -101,56 +100,71 @@ public class UrlsController {
         var url = UrlRepository.find(id)
                 .orElseThrow(() -> new NotFoundResponse("Url not found")); //достали url
 
-        UrlCheck checkedUrl = checkUrl(url.getName());
-        url.addUrlCheck(checkedUrl);
+        UrlCheck checkedUrl = checkUrl(url);
 
+        url.addUrlCheck(checkedUrl);
         UrlCheckRepository.save(checkedUrl);
 
-        ctx.sessionAttribute("flash", Map.of(
-                "message", "Страница успешно проверена",
-                "type", "success"
-        ));
+        ctx.sessionAttribute("flashType", "success");
+        ctx.sessionAttribute("flash", "Страница успешно проверена");
 
-        ctx.redirect(NamedRoutes.urlPathCheck(String.valueOf(id)));
+        ctx.redirect(NamedRoutes.urlPath(String.valueOf(id)));
     }
 
-    private static UrlCheck checkUrl(String urlString) throws IOException {
-        GetRequest request = Unirest.get(urlString)
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .header("Accept", "text/html,application/xhtml+xml");
+    private static UrlCheck checkUrl(Url url) throws IOException {
 
-        HttpResponse<String> response = request.asString();
-        int statusCode = response.getStatus();
-        String htmlBody = response.getBody();
+        UrlCheck urlCheck = new UrlCheck(500, url);
+        var urlString = url.getName();
 
-        String contentType = response.getHeaders().getFirst("Content-Type");
-        if (contentType == null || !contentType.toLowerCase().contains("text/html")) {
-            throw new IOException("Получен не HTML-контент: " + contentType);
+        try {
+            HttpResponse<String> response = Unirest.get(urlString)
+                    .header("User-Agent", "Mozilla/5.0")
+                    .asString();
+
+            urlCheck.setStatusCode(response.getStatus());
+
+            String body = response.getBody();
+            if (body == null || body.trim().isEmpty()) {
+                return urlCheck;
+            }
+
+            try {
+                Document doc = Jsoup.parse(body, urlString);
+                urlCheck.setTitle(doc.title());
+
+                urlCheck.setH1(doc.selectFirst("h1") != null ? doc.selectFirst("h1").text() : null);
+
+                Element descriptionMeta = doc.selectFirst("meta[name=description], meta[property=og:description]");
+                urlCheck.setDescription(descriptionMeta != null ? descriptionMeta.attr("content") : null);
+            } catch (Exception ignored) {
+            }
+
+        } catch (UnirestException e) {
+            if (e.getCause() instanceof java.net.SocketTimeoutException) {
+                urlCheck.setStatusCode(408); // Request Timeout
+            } else if (e.getMessage().toLowerCase().contains("unknown host")) {
+                urlCheck.setStatusCode(404); // Not Found
+            } else if (e.getMessage().toLowerCase().contains("connection refused")) {
+                urlCheck.setStatusCode(502); // Bad Gateway
+            } else {
+                urlCheck.setStatusCode(500); // Internal Server Error для всех остальных
+            }
         }
-
-        Document doc = Jsoup.parse(htmlBody, urlString);
-
-        String title = doc.title();
-        String h1 = Optional.ofNullable(doc.selectFirst("h1"))
-                .map(Element::text)
-                .orElse(null);
-
-        String description = Optional.ofNullable(doc.selectFirst("meta[name=description]"))
-                .map(meta -> meta.attr("content"))
-                .orElseGet(() -> Optional.ofNullable(doc.selectFirst("meta[property=og:description]"))
-                        .map(meta -> meta.attr("content"))
-                        .orElse(null));
-
-        UrlCheck urlCheck = new UrlCheck();
-        urlCheck.setStatusCode(statusCode);
-        urlCheck.setTitle(title);
-        urlCheck.setH1(h1);
-        urlCheck.setDescription(description);
 
         return urlCheck;
     }
 
+    private static void consumeFlashToPage(Context ctx, BasePage page) {
+        var flash = ctx.consumeSessionAttribute("flash");
+        var flashType = ctx.consumeSessionAttribute("flashType");
 
+        if (flash != null) {
+            page.setFlash(flash.toString());
+        }
+        if (flashType != null) {
+            page.setFlashType(flashType.toString());
+        }
+    }
 
     private static String normalizeUrl(String input) throws MalformedURLException {
         try {

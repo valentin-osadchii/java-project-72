@@ -1,4 +1,5 @@
 @import hexlet.code.dto.urls.UrlsPage
+@import hexlet.code.util.DateUtils
 @import hexlet.code.util.NamedRoutes
 
 @param UrlsPage page
@@ -13,13 +14,19 @@
                 <th>Последняя проверка</th>
                 <th>Код ответа</th>
             </tr>
-            @if(!page.getUrls().isEmpty())
-                @for(var url : page.getUrls())
+            @if(!page.getItems().isEmpty())
+                @for(var urlListItem : page.getItems())
                     <tr>
-                        <td>${url.getId()}</td>
-                        <td><a href="${NamedRoutes.urlPath(url.getId())}">${url.getName()}</a></td>
-                        <td></td>
-                        <td></td>
+                        <td>${urlListItem.getId()}</td>
+                        <td><a href="${NamedRoutes.urlPath(urlListItem.getId())}">${urlListItem.getName()}</a></td>
+                        @if(urlListItem.getLastCheck() != null)
+                            <td>${DateUtils.format(urlListItem.getLastCheck().getCreatedAt())}</td>
+                            <td>${urlListItem.getLastCheck().getStatusCode()}</td>
+                        @else
+                            <td></td>
+                            <td></td>
+                        @endif
+
                     </tr>
                 @endfor
             @endif
