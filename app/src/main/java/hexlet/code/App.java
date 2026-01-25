@@ -36,9 +36,9 @@ public class App {
     private static String getJdbcUrl() {
         String jdbcUrl = System.getenv().getOrDefault(
                 "JDBC_DATABASE_URL",
-                "jdbc:h2:mem:project;"+
-                        "MODE=PostgreSQL;" +
-                        "DB_CLOSE_DELAY=-1;");
+                "jdbc:h2:mem:project;"
+                        + "MODE=PostgreSQL;"
+                        + "DB_CLOSE_DELAY=-1;");
         return jdbcUrl;
     }
 

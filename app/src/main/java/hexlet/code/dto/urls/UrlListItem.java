@@ -1,4 +1,3 @@
-// hexlet.code.dto.urls.UrlListItem.java
 package hexlet.code.dto.urls;
 
 import hexlet.code.model.Url;
@@ -8,7 +7,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class UrlListItem {
+public final class UrlListItem {
     private final Long id;
     private final String name;
     private final LocalDateTime createdAt;

@@ -15,7 +15,6 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 
 import kong.unirest.core.Unirest;
-import kong.unirest.core.GetRequest;
 import kong.unirest.core.HttpResponse;
 
 import kong.unirest.core.UnirestException;
@@ -29,7 +28,6 @@ import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import static io.javalin.rendering.template.TemplateUtil.model;
 
