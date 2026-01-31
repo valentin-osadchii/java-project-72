@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY /app .
 
-RUN gradle installDist
+# #команды для сборки в github pipeline
+RUN ["./gradlew", "clean", "build"]
+CMD ["./gradlew", "run"]
 
-CMD ./build/install/app/bin/app
+# #команды для запуска в railway
+# RUN gradle installDist
+# CMD ./build/install/app/bin/app
