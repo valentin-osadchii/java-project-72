@@ -109,7 +109,7 @@ public class UrlsController {
         ctx.redirect(NamedRoutes.urlPath(String.valueOf(id)));
     }
 
-    private static UrlCheck checkUrl(Url url) throws IOException {
+    private static UrlCheck checkUrl(Url url) {
 
         UrlCheck urlCheck = new UrlCheck(500, url);
         var urlString = url.getName();
@@ -128,7 +128,9 @@ public class UrlsController {
 
             try {
                 Document doc = Jsoup.parse(body, urlString);
-                urlCheck.setTitle(doc.title());
+
+                String title = doc.title();
+                urlCheck.setTitle(!title.trim().isEmpty() ? title.trim() : null);
 
                 urlCheck.setH1(doc.selectFirst("h1") != null ? doc.selectFirst("h1").text() : null);
 
