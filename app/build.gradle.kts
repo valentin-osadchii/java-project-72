@@ -29,7 +29,6 @@ dependencies {
 
     testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
     testImplementation("com.squareup.okhttp3:okhttp-urlconnection:5.3.2")
-// Также убедитесь, что есть основная зависимость OkHttp
     testImplementation("com.squareup.okhttp3:okhttp:5.3.2")
 
 
@@ -41,7 +40,8 @@ dependencies {
     implementation("gg.jte:jte:3.1.9")
     implementation("io.javalin:javalin-rendering:6.1.3")
 
-    implementation("com.h2database:h2:2.2.220")
+    runtimeOnly("com.h2database:h2:2.2.220")
+    implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     compileOnly("org.projectlombok:lombok:$lombokVersion")
