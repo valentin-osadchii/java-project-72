@@ -26,7 +26,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.javalin:javalin-testtools:6.7.0")
     testImplementation("org.assertj:assertj-core:3.27.3")
-    testImplementation("com.squareup.okhttp3:okhttp-urlconnection:4.12.0")
+
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
+    testImplementation("com.squareup.okhttp3:okhttp-urlconnection:5.3.2")
+// Также убедитесь, что есть основная зависимость OkHttp
+    testImplementation("com.squareup.okhttp3:okhttp:5.3.2")
+
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
 
