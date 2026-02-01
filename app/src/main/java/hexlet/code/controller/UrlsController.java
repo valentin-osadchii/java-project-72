@@ -126,18 +126,16 @@ public class UrlsController {
                 return urlCheck;
             }
 
-            try {
-                Document doc = Jsoup.parse(body, urlString);
+            Document doc = Jsoup.parse(body, urlString);
 
-                String title = doc.title();
-                urlCheck.setTitle(!title.trim().isEmpty() ? title.trim() : null);
+            String title = doc.title();
+            urlCheck.setTitle(!title.trim().isEmpty() ? title.trim() : null);
 
-                urlCheck.setH1(doc.selectFirst("h1") != null ? doc.selectFirst("h1").text() : null);
+            urlCheck.setH1(doc.selectFirst("h1") != null ? doc.selectFirst("h1").text() : null);
 
-                Element descriptionMeta = doc.selectFirst("meta[name=description], meta[property=og:description]");
-                urlCheck.setDescription(descriptionMeta != null ? descriptionMeta.attr("content") : null);
-            } catch (Exception ignored) {
-            }
+            Element descriptionMeta = doc.selectFirst("meta[name=description], meta[property=og:description]");
+            urlCheck.setDescription(descriptionMeta != null ? descriptionMeta.attr("content") : null);
+
 
         } catch (UnirestException e) {
             if (e.getCause() instanceof java.net.SocketTimeoutException) {
@@ -149,6 +147,7 @@ public class UrlsController {
             } else {
                 urlCheck.setStatusCode(500); // Internal Server Error для всех остальных
             }
+        } catch (Exception ignored) {
         }
 
         return urlCheck;
