@@ -293,7 +293,7 @@ public class AppTest {
             UrlRepository.save(url);
 
             List<Url> urls = UrlRepository.getEntities();
-            Long urlId = urls.getFirst().getId();
+            Long urlId = urls.get(0).getId();
 
             var requestCheckBody = new okhttp3.FormBody.Builder()
                     .build();
