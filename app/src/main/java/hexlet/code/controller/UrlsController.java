@@ -22,9 +22,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
@@ -70,7 +70,7 @@ public class UrlsController {
 
         try {
             normalizedUrl = normalizeUrl(name);
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             ctx.sessionAttribute("flashType", "danger");
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.redirect(NamedRoutes.rootPath());
@@ -93,39 +93,44 @@ public class UrlsController {
         ctx.redirect(NamedRoutes.urlsPath(), HttpStatus.forStatus(301));
     }
 
-    public static void check(Context ctx) throws SQLException, IOException {
+    public static void check(Context ctx) throws SQLException {
         var id = ctx.pathParamAsClass("id", Long.class).get(); //нашли url
         var url = UrlRepository.find(id)
                 .orElseThrow(() -> new NotFoundResponse("Url not found")); //достали url
 
-        UrlCheck checkedUrl = checkUrl(url);
+        try {
+            UrlCheck checkedUrl = checkUrl(url);
+            url.addUrlCheck(checkedUrl);
+            UrlCheckRepository.save(checkedUrl);
+            ctx.sessionAttribute("flashType", "success");
+            ctx.sessionAttribute("flash", "Страница успешно проверена");
+        } catch (UnirestException e) {
+            ctx.sessionAttribute("flashType", "danger");
+            ctx.sessionAttribute("flash", "Некорректный адрес");
+        }
 
-        url.addUrlCheck(checkedUrl);
-        UrlCheckRepository.save(checkedUrl);
-
-        ctx.sessionAttribute("flashType", "success");
-        ctx.sessionAttribute("flash", "Страница успешно проверена");
 
         ctx.redirect(NamedRoutes.urlPath(String.valueOf(id)));
     }
 
-    private static UrlCheck checkUrl(Url url) {
+    private static UrlCheck checkUrl(Url url) throws  UnirestException {
 
         UrlCheck urlCheck = new UrlCheck(500, url);
         var urlString = url.getName();
 
+
+        HttpResponse<String> response = Unirest.get(urlString)
+                .header("User-Agent", "Mozilla/5.0")
+                .asString();
+
+        urlCheck.setStatusCode(response.getStatus());
+
+        String body = response.getBody();
+        if (body == null || body.trim().isEmpty()) {
+            return urlCheck;
+        }
+
         try {
-            HttpResponse<String> response = Unirest.get(urlString)
-                    .header("User-Agent", "Mozilla/5.0")
-                    .asString();
-
-            urlCheck.setStatusCode(response.getStatus());
-
-            String body = response.getBody();
-            if (body == null || body.trim().isEmpty()) {
-                return urlCheck;
-            }
-
             Document doc = Jsoup.parse(body, urlString);
 
             String title = doc.title();
@@ -135,18 +140,6 @@ public class UrlsController {
 
             Element descriptionMeta = doc.selectFirst("meta[name=description], meta[property=og:description]");
             urlCheck.setDescription(descriptionMeta != null ? descriptionMeta.attr("content") : null);
-
-
-        } catch (UnirestException e) {
-            if (e.getCause() instanceof java.net.SocketTimeoutException) {
-                urlCheck.setStatusCode(408); // Request Timeout
-            } else if (e.getMessage().toLowerCase().contains("unknown host")) {
-                urlCheck.setStatusCode(404); // Not Found
-            } else if (e.getMessage().toLowerCase().contains("connection refused")) {
-                urlCheck.setStatusCode(502); // Bad Gateway
-            } else {
-                urlCheck.setStatusCode(500); // Internal Server Error для всех остальных
-            }
         } catch (Exception ignored) {
         }
 
@@ -165,27 +158,24 @@ public class UrlsController {
         }
     }
 
-    private static String normalizeUrl(String input) throws MalformedURLException {
-        try {
-            URI uri = new URI(input);
-            URL url = uri.toURL();
+    private static String normalizeUrl(String input) throws MalformedURLException, URISyntaxException {
 
-            String protocol = url.getProtocol();
-            String host = url.getHost();
-            int port = url.getPort();
+        URI uri = new URI(input);
+        URL url = uri.toURL();
 
-            StringBuilder normalized = new StringBuilder();
-            normalized.append(protocol).append("://").append(host);
+        String protocol = url.getProtocol();
+        String host = url.getHost();
+        int port = url.getPort();
 
-            if (port != -1) {
-                normalized.append(":").append(port);
-            }
+        StringBuilder normalized = new StringBuilder();
+        normalized.append(protocol).append("://").append(host);
 
-            return normalized.toString();
-
-        } catch (Exception e) {
-            throw new MalformedURLException("Некорректный URL");
+        if (port != -1) {
+            normalized.append(":").append(port);
         }
+
+        return normalized.toString();
+
     }
 
 }
