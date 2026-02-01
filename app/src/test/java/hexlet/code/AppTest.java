@@ -1,6 +1,7 @@
 package hexlet.code;
 
 import hexlet.code.model.Url;
+import hexlet.code.model.UrlCheck;
 import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.util.DateUtils;
 import hexlet.code.util.NamedRoutes;
@@ -217,6 +218,7 @@ public class AppTest {
                     .post(requestCheckBody)
                     .build();
 
+
             try (var response = httpClient.newCall(requestCheck).execute()) {
                 String urlWithCheckPageBody = response.body().string();
                 assertThat(response.code()).isEqualTo(200);
@@ -225,6 +227,23 @@ public class AppTest {
                 assertThat(urlWithCheckPageBody).contains(expectedDescription);
                 assertThat(urlWithCheckPageBody).contains("Страница успешно проверена");
             }
+
+            List<UrlCheck> checks = UrlCheckRepository.findByUrlId(urlId);
+            assertThat(checks)
+                    .as("Должна существовать ровно одна проверка для URL")
+                    .hasSize(1);
+
+            UrlCheck savedCheck = checks.get(0);
+            assertThat(savedCheck.getTitle())
+                    .as("Title в БД должен совпадать с ожидаемым")
+                    .isEqualTo(expectedTitle);
+            assertThat(savedCheck.getH1())
+                    .as("H1 в БД должен совпадать с ожидаемым")
+                    .isEqualTo(expectedH1);
+            assertThat(savedCheck.getDescription())
+                    .as("Description в БД должен совпадать с ожидаемым")
+                    .isEqualTo(expectedDescription);
+
         });
     }
 
@@ -274,7 +293,7 @@ public class AppTest {
             UrlRepository.save(url);
 
             List<Url> urls = UrlRepository.getEntities();
-            Long urlId = urls.get(0).getId();
+            Long urlId = urls.getFirst().getId();
 
             var requestCheckBody = new okhttp3.FormBody.Builder()
                     .build();
