@@ -94,9 +94,9 @@ public class UrlsController {
     }
 
     public static void check(Context ctx) throws SQLException {
-        var id = ctx.pathParamAsClass("id", Long.class).get(); //нашли url
+        var id = ctx.pathParamAsClass("id", Long.class).get();
         var url = UrlRepository.find(id)
-                .orElseThrow(() -> new NotFoundResponse("Url not found")); //достали url
+                .orElseThrow(() -> new NotFoundResponse("Url not found"));
 
         try {
             UrlCheck checkedUrl = checkUrl(url);
@@ -107,13 +107,15 @@ public class UrlsController {
         } catch (UnirestException e) {
             ctx.sessionAttribute("flashType", "danger");
             ctx.sessionAttribute("flash", "Некорректный адрес");
+        } catch (RuntimeException e) {
+            ctx.sessionAttribute("flashType", "warning");
+            ctx.sessionAttribute("flash", "Страница доступна, но не удалось извлечь метаданные");
         }
-
 
         ctx.redirect(NamedRoutes.urlPath(String.valueOf(id)));
     }
 
-    private static UrlCheck checkUrl(Url url) throws  UnirestException {
+    private static UrlCheck checkUrl(Url url) throws UnirestException {
 
         UrlCheck urlCheck = new UrlCheck(500, url);
         var urlString = url.getName();
@@ -130,18 +132,17 @@ public class UrlsController {
             return urlCheck;
         }
 
-        try {
-            Document doc = Jsoup.parse(body, urlString);
 
-            String title = doc.title();
-            urlCheck.setTitle(!title.trim().isEmpty() ? title.trim() : null);
+        Document doc = Jsoup.parse(body, urlString);
 
-            urlCheck.setH1(doc.selectFirst("h1") != null ? doc.selectFirst("h1").text() : null);
+        String title = doc.title();
+        urlCheck.setTitle(!title.trim().isEmpty() ? title.trim() : null);
 
-            Element descriptionMeta = doc.selectFirst("meta[name=description], meta[property=og:description]");
-            urlCheck.setDescription(descriptionMeta != null ? descriptionMeta.attr("content") : null);
-        } catch (Exception ignored) {
-        }
+        Element h1Element = doc.selectFirst("h1");
+        urlCheck.setH1(h1Element != null ? h1Element.text() : null);
+
+        Element descriptionMeta = doc.selectFirst("meta[name=description], meta[property=og:description]");
+        urlCheck.setDescription(descriptionMeta != null ? descriptionMeta.attr("content") : null);
 
         return urlCheck;
     }
